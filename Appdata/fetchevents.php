@@ -1,0 +1,36 @@
+<?php
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET");
+
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "academic"; // change as needed
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    exit;
+}
+
+$sql = "SELECT * FROM events ORDER BY start_date DESC";
+$result = $conn->query($sql);
+
+if ($result && $result->num_rows > 0) {
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    echo json_encode(["status" => "success", "data" => $data]);
+} else {
+    echo json_encode(["status" => "error", "message" => "No records found"]);
+}
+
+$conn->close();
+?>
+
+

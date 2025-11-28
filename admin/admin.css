@@ -1,0 +1,253 @@
+/* Admin Panel Custom Styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #f7fafd 0%, #e8f4f8 100%);
+  color: #222;
+  min-height: 100vh;
+}
+.admin-header {
+  background: linear-gradient(135deg, #00a9b4 0%, #008c97 50%, #00a9b4 100%);
+  background-size: 200% 100%;
+  animation: headerGradient 4s ease-in-out infinite;
+  color: #fff;
+  padding: 35px 0 25px 0;
+  text-align: center;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,169,180,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes headerGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.admin-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.admin-header h2 {
+  font-weight: 700;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 10px;
+}
+
+.admin-header p {
+  opacity: 0.9;
+  position: relative;
+  z-index: 2;
+}
+.btn-admin {
+  background: linear-gradient(135deg, #00a9b4, #008c97);
+  color: #fff;
+  border-radius: 25px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,169,180,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-admin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-admin:hover::before {
+  left: 100%;
+}
+
+.btn-admin:hover {
+  background: linear-gradient(135deg, #008c97, #00a9b4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,169,180,0.4);
+  color: #fff;
+}
+.card-admin {
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,169,180,0.1);
+  border: none;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.card-admin:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(0,169,180,0.15);
+}
+
+.table-admin th {
+  background: linear-gradient(135deg, #e0f7fa, #f0fdfe);
+  color: #008c97;
+  font-weight: 600;
+  border: none;
+  padding: 15px;
+}
+
+.table-admin td {
+  background: #fff;
+  border: none;
+  padding: 12px 15px;
+  transition: background-color 0.3s ease;
+}
+
+.table-admin tbody tr:hover td {
+  background-color: rgba(0,169,180,0.05);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #00a9b4, #008c97);
+  color: #fff;
+  border-radius: 15px 15px 0 0;
+  border: none;
+}
+.admin-sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 250px;
+      background: linear-gradient(180deg, #00a9b4 0%, #008c97 100%);
+      color: #fff;
+      padding: 30px 0 0 0;
+      box-shadow: 4px 0 20px rgba(0,169,180,0.15);
+      z-index: 100;
+      height: 100vh;
+      border-right: 3px solid rgba(255,255,255,0.1);
+    }
+
+    .admin-sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+    }
+
+    .admin-sidebar h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 35px;
+      text-align: center;
+      padding: 0 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .admin-sidebar h3::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+    }
+
+    .admin-sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-sidebar ul li {
+      margin: 8px 0;
+      padding: 0 15px;
+    }
+
+    .admin-sidebar ul li a {
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-sidebar ul li a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .admin-sidebar ul li a:hover::before {
+      left: 100%;
+    }
+
+    .admin-sidebar ul li a i {
+      width: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .admin-sidebar ul li a.active {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-weight: 600;
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar ul li a:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      transform: translateX(5px);
+    }
+    .admin-main {
+      margin-left: 270px;
+      padding: 40px 20px 20px 20px;
+    }
+    .admin-header {
+      background: linear-gradient(90deg, #00a9b4, #008c97);
+      color: #fff;
+      padding: 30px 0 20px 0;
+      text-align: center;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(0,169,180,0.08);
+      margin-bottom: 30px;
+    }
+    .card-admin {
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+      border: none;
+      transition: transform 0.2s;
+    }
+    .card-admin:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 24px rgba(0,169,180,0.12);
+    }
