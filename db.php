@@ -1,7 +1,7 @@
 <?php
 $servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com"; // usually localhost
 $username = "u2dmuf8ob16mtxjc";        // your MySQL username
-$password = "u2dmuf8ob16mtxjc";            // your MySQL password
+$password = "KnPCyASMwE220OGeIci4";            // your MySQL password
 $dbname = "bsjvqufvzqkzs5kqijg1";      // your academic database name
 
 // Create connection
