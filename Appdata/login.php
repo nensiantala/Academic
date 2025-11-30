@@ -3,10 +3,10 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
 // DB connection
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "academic";
+$servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com"; // usually localhost
+$username = "u2dmuf8ob16mtxjc";        // your MySQL username
+$password = "KnPCyASMwE220OGeIci4";            // your MySQL password
+$dbname = "bsjvqufvzqkzs5kqijg1"; 
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 
