@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost"; // usually localhost
-$username = "root";        // your MySQL username
-$password = "";            // your MySQL password
-$dbname = "academic";      // your academic database name
+$servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com"; // usually localhost
+$username = "u2dmuf8ob16mtxjc";        // your MySQL username
+$password = "u2dmuf8ob16mtxjc";            // your MySQL password
+$dbname = "bsjvqufvzqkzs5kqijg1";      // your academic database name
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
