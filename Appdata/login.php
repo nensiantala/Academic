@@ -3,12 +3,12 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
 // DB connection
-$servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com"; // usually localhost
-$username = "u2dmuf8ob16mtxjc";        // your MySQL username
-$password = "KnPCyASMwE220OGeIci4";            // your MySQL password
-$dbname = "bsjvqufvzqkzs5kqijg1"; 
+$servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com";
+$username   = "u2dmuf8ob16mtxjc";
+$password   = "KnPCyASMwE220OGeIci4";
+$dbname     = "bsjvqufvzqkzs5kqijg1";
 
-$conn = new mysqli($host, $user, $pass, $dbname);
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     echo json_encode(["status" => false, "message" => "Database connection failed"]);
@@ -64,4 +64,3 @@ if ($result->num_rows === 1) {
 $stmt->close();
 $conn->close();
 ?>
-
