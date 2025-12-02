@@ -31,8 +31,31 @@ $all = $conn->query("SELECT * FROM news ORDER BY date DESC");
           <?php if($all && $all->num_rows): while($a=$all->fetch_assoc()): ?>
             <a href="news.php?id=<?=$a['id']?>" class="list-group-item list-group-item-action">
               <div class="d-flex justify-content-between align-items-start gap-3">
-                <?php if (!empty($a['image']) && is_string($a['image'])): ?>
-                  <img src="<?= htmlspecialchars($a['image']) ?>" alt="News Image" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; flex-shrink: 0;">
+                <?php 
+                // Handle image path - check if it's already a full path or just filename
+                $img = '';
+                if (!empty($a['image']) && is_string($a['image'])) {
+                    $imageValue = trim($a['image']);
+                    // If it already contains 'uploads/news/', use it as is
+                    if (strpos($imageValue, 'uploads/news/') !== false) {
+                        $img = $imageValue;
+                    } 
+                    // If it starts with 'uploads/', use it as is
+                    elseif (strpos($imageValue, 'uploads/') === 0) {
+                        $img = $imageValue;
+                    }
+                    // Otherwise, prepend 'uploads/news/'
+                    else {
+                        $img = 'uploads/news/' . $imageValue;
+                    }
+                    
+                    // Verify file exists
+                    if (!file_exists($img)) {
+                        $img = ''; // Don't show image if file doesn't exist
+                    }
+                }
+                if (!empty($img)): ?>
+                  <img src="<?= htmlspecialchars($img) ?>" alt="News Image" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; flex-shrink: 0;">
                 <?php endif; ?>
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between">
