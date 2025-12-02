@@ -60,7 +60,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_news'])) {
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
             if (!empty($row['image']) && is_string($row['image'])) {
-                $image_path = '../' . $row['image'];
+                $imageValue = trim($row['image']);
+                // Handle different path formats
+                if (strpos($imageValue, 'uploads/news/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                    $image_path = '../' . $imageValue;
+                } else {
+                    $image_path = '../uploads/news/' . $imageValue;
+                }
                 if (file_exists($image_path)) {
                     unlink($image_path);
                 }
@@ -101,7 +107,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_news'])) {
         if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
             // Delete old image if exists
             if (!empty($existing_image)) {
-                $old_path = '../' . $existing_image;
+                $imageValue = trim($existing_image);
+                // Handle different path formats
+                if (strpos($imageValue, 'uploads/news/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                    $old_path = '../' . $imageValue;
+                } else {
+                    $old_path = '../uploads/news/' . $imageValue;
+                }
                 if (file_exists($old_path)) {
                     unlink($old_path);
                 }
@@ -170,9 +182,32 @@ $result = $conn->query("SELECT * FROM news ORDER BY date DESC");
         <?php while($n = $result->fetch_assoc()): ?>
           <div class="border rounded p-3 mb-3">
             <div class="d-flex gap-3">
-              <?php if (!empty($n['image']) && is_string($n['image'])): ?>
+              <?php 
+              // Handle image path - check if it's already a full path or just filename
+              $img = '';
+              if (!empty($n['image']) && is_string($n['image'])) {
+                  $imageValue = trim($n['image']);
+                  // If it already contains 'uploads/news/', use it as is
+                  if (strpos($imageValue, 'uploads/news/') !== false) {
+                      $img = '../' . $imageValue;
+                  } 
+                  // If it starts with 'uploads/', use it as is
+                  elseif (strpos($imageValue, 'uploads/') === 0) {
+                      $img = '../' . $imageValue;
+                  }
+                  // Otherwise, prepend 'uploads/news/'
+                  else {
+                      $img = '../uploads/news/' . $imageValue;
+                  }
+                  
+                  // Verify file exists
+                  if (!file_exists($img)) {
+                      $img = ''; // Don't show image if file doesn't exist
+                  }
+              }
+              if (!empty($img)): ?>
                 <div>
-                  <img src="../<?= htmlspecialchars($n['image']) ?>" alt="News Image" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                  <img src="<?= htmlspecialchars($img) ?>" alt="News Image" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
                 </div>
               <?php endif; ?>
               <div class="flex-grow-1">
@@ -296,7 +331,12 @@ $result = $conn->query("SELECT * FROM news ORDER BY date DESC");
       const imagePath = btn.getAttribute('data-image');
       const previewDiv = document.getElementById('editNewsImagePreview');
       if (imagePath && imagePath.trim() !== '') {
-        previewDiv.innerHTML = '<img src="../' + imagePath + '" alt="Current Image" style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd;">';
+        // Handle path - if it already starts with 'uploads/', use as is, otherwise prepend 'uploads/news/'
+        let imgPath = imagePath.trim();
+        if (imgPath.indexOf('uploads/news/') === -1 && imgPath.indexOf('uploads/') !== 0) {
+          imgPath = 'uploads/news/' + imgPath;
+        }
+        previewDiv.innerHTML = '<img src="../' + imgPath + '" alt="Current Image" style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd;">';
       } else {
         previewDiv.innerHTML = '<small class="text-muted">No image currently set</small>';
       }
