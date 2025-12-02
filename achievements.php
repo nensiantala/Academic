@@ -72,7 +72,29 @@ include 'db.php';
     $result = $conn->query("SELECT * FROM achievements ORDER BY date DESC, created_at DESC");
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $img = !empty($row['image']) ? 'uploads/achievements/' . $row['image'] : 'assets/img/default-achievement.jpg';
+            // Handle image path - check if it's already a full path or just filename
+            $img = 'assets/img/default-achievement.jpg';
+            if (!empty($row['image'])) {
+                $imageValue = trim($row['image']);
+                // If it already contains 'uploads/achievements/', use it as is
+                if (strpos($imageValue, 'uploads/achievements/') !== false) {
+                    $img = $imageValue;
+                } 
+                // If it starts with 'uploads/', use it as is
+                elseif (strpos($imageValue, 'uploads/') === 0) {
+                    $img = $imageValue;
+                }
+                // Otherwise, prepend 'uploads/achievements/'
+                else {
+                    $img = 'uploads/achievements/' . $imageValue;
+                }
+                
+                // Verify file exists, otherwise use default
+                if (!file_exists($img)) {
+                    $img = 'assets/img/default-achievement.jpg';
+                }
+            }
+            
             $category = $row['category'];
             $name = $category == 'student' ? $row['student_name'] : $row['faculty_name'];
             $badgeClass = $category == 'student' ? 'student-badge' : 'faculty-badge';
