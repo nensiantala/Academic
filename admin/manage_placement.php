@@ -38,7 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_placement'])) {
         if ($res && ($row = $res->fetch_assoc())) {
             $photo = $row['student_photo'] ?? '';
             if (!empty($photo)) {
-                $path = '../uploads/' . $photo;
+                $imageValue = trim($photo);
+                // Handle different path formats
+                if (strpos($imageValue, 'uploads/placements/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                    $path = '../' . $imageValue;
+                } elseif (strpos($imageValue, 'placements/') !== false) {
+                    $path = '../uploads/' . $imageValue;
+                } else {
+                    $path = '../uploads/placements/' . $imageValue;
+                }
                 if (file_exists($path)) @unlink($path);
             }
         }
@@ -66,7 +74,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_placement'])) {
             $targetFilePath = $targetDir . $filename;
             if (move_uploaded_file($_FILES['student_photo']['tmp_name'], $targetFilePath)) {
                 if (!empty($current)) {
-                    $oldPath = '../uploads/' . $current;
+                    $imageValue = trim($current);
+                    // Handle different path formats when deleting old image
+                    if (strpos($imageValue, 'uploads/placements/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                        $oldPath = '../' . $imageValue;
+                    } elseif (strpos($imageValue, 'placements/') !== false) {
+                        $oldPath = '../uploads/' . $imageValue;
+                    } else {
+                        $oldPath = '../uploads/placements/' . $imageValue;
+                    }
                     if (file_exists($oldPath)) @unlink($oldPath);
                 }
                 $newPhoto = 'placements/' . $filename;
@@ -121,7 +137,32 @@ $result = $conn->query("SELECT * FROM placements ORDER BY created_at DESC");
     <div class="row mt-3">
       <?php if ($result && $result->num_rows > 0): ?>
         <?php while ($row = $result->fetch_assoc()): 
-          $img = !empty($row['student_photo']) ? '../uploads/' . $row['student_photo'] : '../assets/default-avatar.png';
+          // Handle image path - check if it's already a full path or just filename
+          $img = '../assets/default-avatar.png';
+          if (!empty($row['student_photo'])) {
+              $imageValue = trim($row['student_photo']);
+              // If it already contains 'uploads/placements/', use it as is
+              if (strpos($imageValue, 'uploads/placements/') !== false) {
+                  $img = '../' . $imageValue;
+              } 
+              // If it starts with 'uploads/', use it as is
+              elseif (strpos($imageValue, 'uploads/') === 0) {
+                  $img = '../' . $imageValue;
+              }
+              // If it contains 'placements/', prepend '../uploads/'
+              elseif (strpos($imageValue, 'placements/') !== false) {
+                  $img = '../uploads/' . $imageValue;
+              }
+              // Otherwise, prepend '../uploads/placements/'
+              else {
+                  $img = '../uploads/placements/' . $imageValue;
+              }
+              
+              // Verify file exists, otherwise use default
+              if (!file_exists($img)) {
+                  $img = '../assets/default-avatar.png';
+              }
+          }
         ?>
           <div class="col-md-4 mb-3">
             <div class="card lab-card h-100">
@@ -225,7 +266,16 @@ $result = $conn->query("SELECT * FROM placements ORDER BY created_at DESC");
       document.getElementById('editPlacementId').value = id;
       const img = document.getElementById('currentPlacementImage');
       if (photo) {
-        img.src = '../uploads/' + photo;
+        // Handle path - if it already starts with 'uploads/', use as is, otherwise prepend 'uploads/'
+        let imgPath = photo.trim();
+        if (imgPath.indexOf('uploads/placements/') === -1 && imgPath.indexOf('uploads/') !== 0) {
+          if (imgPath.indexOf('placements/') !== -1) {
+            imgPath = 'uploads/' + imgPath;
+          } else {
+            imgPath = 'uploads/placements/' + imgPath;
+          }
+        }
+        img.src = '../' + imgPath;
         img.style.display = 'block';
       } else {
         img.style.display = 'none';
