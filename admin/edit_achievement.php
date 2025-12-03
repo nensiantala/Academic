@@ -40,10 +40,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_achievement']))
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['image']['name']);
+        // Delete old image if exists
+        if (!empty($image) && $image !== 'assets/img/default-achievement.jpg') {
+            $oldImageValue = trim($image);
+            // Handle different path formats when deleting old image
+            if (strpos($oldImageValue, 'uploads/achievements/') !== false || strpos($oldImageValue, 'uploads/') === 0) {
+                $oldPath = '../' . $oldImageValue;
+            } elseif (strpos($oldImageValue, 'achievements/') !== false) {
+                $oldPath = '../uploads/' . $oldImageValue;
+            } else {
+                $oldPath = '../uploads/achievements/' . $oldImageValue;
+            }
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $imagePath = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['image']['tmp_name'], $imagePath)) {
-            $image = $imageName;
+            $image = 'uploads/achievements/' . $imageName;
         }
     }
     
@@ -154,9 +170,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_achievement']))
             
             <div class="mb-3">
               <label class="form-label">Current Image</label>
-              <?php if (!empty($achievement['image'])): ?>
+              <?php 
+              // Handle image path for display
+              $currentImage = '';
+              if (!empty($achievement['image']) && $achievement['image'] !== 'assets/img/default-achievement.jpg') {
+                  $imageValue = trim($achievement['image']);
+                  // If it already contains 'uploads/achievements/', use it as is
+                  if (strpos($imageValue, 'uploads/achievements/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                      $currentImage = '../' . $imageValue;
+                  } 
+                  // If it contains 'achievements/', prepend '../uploads/'
+                  elseif (strpos($imageValue, 'achievements/') !== false) {
+                      $currentImage = '../uploads/' . $imageValue;
+                  }
+                  // Otherwise, prepend '../uploads/achievements/'
+                  else {
+                      $currentImage = '../uploads/achievements/' . $imageValue;
+                  }
+                  
+                  // Verify file exists
+                  if (!file_exists($currentImage)) {
+                      $currentImage = '';
+                  }
+              }
+              if (!empty($currentImage)): ?>
                 <div class="mb-2">
-                  <img src="../uploads/achievements/<?= htmlspecialchars($achievement['image']) ?>" alt="Current Image" style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+                  <img src="<?= htmlspecialchars($currentImage) ?>" alt="Current Image" style="max-width: 200px; max-height: 150px; border-radius: 8px;">
                 </div>
               <?php endif; ?>
               <label class="form-label">Update Image</label>
