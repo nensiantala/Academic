@@ -5,10 +5,10 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET");
 
 // Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "academic";
+$servername = "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com"; // usually localhost
+$username = "u2dmuf8ob16mtxjc";        // your MySQL username
+$password = "KnPCyASMwE220OGeIci4";            // your MySQL password
+$dbname = "bsjvqufvzqkzs5kqijg1"; 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -41,4 +41,5 @@ if ($result && $result->num_rows > 0) {
 
 $conn->close();
 ?>
+
 
