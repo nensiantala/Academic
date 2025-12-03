@@ -6,6 +6,11 @@ if (!isset($_SESSION['admin_id'])) {
 }
 include '../db.php';
 
+$upload_dir = '../uploads/notices/';
+if (!file_exists($upload_dir)) {
+    mkdir($upload_dir, 0777, true);
+}
+
 // Handle Add Notice
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_notice'])) {
     $title = $_POST['title'];
@@ -14,9 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_notice'])) {
     $file = '';
 
     if (!empty($_FILES['notice_file']['name'])) {
-        $target = '../uploads/' . basename($_FILES['notice_file']['name']);
+        $ext = pathinfo($_FILES['notice_file']['name'], PATHINFO_EXTENSION);
+        $new_filename = uniqid() . '_' . time() . '.' . $ext;
+        $target = $upload_dir . $new_filename;
         if (move_uploaded_file($_FILES['notice_file']['tmp_name'], $target)) {
-            $file = basename($_FILES['notice_file']['name']);
+            $file = 'uploads/notices/' . $new_filename;
         }
     }
 
@@ -36,7 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_notice'])) {
         if ($res && ($r = $res->fetch_assoc())) {
             $f = $r['file'] ?? '';
             if (!empty($f)) {
-                $path = '../uploads/' . $f;
+                $fileValue = trim($f);
+                // Handle different path formats
+                if (strpos($fileValue, 'uploads/notices/') !== false || strpos($fileValue, 'uploads/') === 0) {
+                    $path = '../' . $fileValue;
+                } elseif (strpos($fileValue, 'notices/') !== false) {
+                    $path = '../uploads/' . $fileValue;
+                } else {
+                    $path = '../uploads/notices/' . $fileValue;
+                }
                 if (file_exists($path)) @unlink($path);
             }
         }
@@ -57,9 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_notice'])) {
     $date = $_POST['date'] ?? '';
     $newFile = null;
     if (!empty($_FILES['notice_file']['name'])) {
-        $target = '../uploads/' . basename($_FILES['notice_file']['name']);
+        $ext = pathinfo($_FILES['notice_file']['name'], PATHINFO_EXTENSION);
+        $new_filename = uniqid() . '_' . time() . '.' . $ext;
+        $target = $upload_dir . $new_filename;
         if (move_uploaded_file($_FILES['notice_file']['tmp_name'], $target)) {
-            $newFile = basename($_FILES['notice_file']['name']);
+            $newFile = 'uploads/notices/' . $new_filename;
         }
     }
     if ($notice_id > 0) {
@@ -69,7 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_notice'])) {
             if ($res && ($r = $res->fetch_assoc())) {
                 $old = $r['file'] ?? '';
                 if (!empty($old)) {
-                    $oldPath = '../uploads/' . $old;
+                    $fileValue = trim($old);
+                    // Handle different path formats when deleting old file
+                    if (strpos($fileValue, 'uploads/notices/') !== false || strpos($fileValue, 'uploads/') === 0) {
+                        $oldPath = '../' . $fileValue;
+                    } elseif (strpos($fileValue, 'notices/') !== false) {
+                        $oldPath = '../uploads/' . $fileValue;
+                    } else {
+                        $oldPath = '../uploads/notices/' . $fileValue;
+                    }
                     if (file_exists($oldPath)) @unlink($oldPath);
                 }
             }
@@ -135,8 +160,26 @@ $result = $conn->query("SELECT * FROM notices ORDER BY id DESC");
               <p class="text-muted"><i class="fa-solid fa-calendar-days me-1"></i><?= htmlspecialchars($row['date']) ?></p>
               <p><?= nl2br(htmlspecialchars(substr($row['description'], 0, 120))) ?>...</p>
               <div class="d-flex gap-2">
-                <?php if (!empty($row['file'])): ?>
-                  <a href="../uploads/<?= htmlspecialchars($row['file']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">View File</a>
+                <?php 
+                // Handle file path - check if it's already a full path or just filename
+                $filePath = '';
+                if (!empty($row['file'])) {
+                    $fileValue = trim($row['file']);
+                    // If it already contains 'uploads/notices/', use it as is
+                    if (strpos($fileValue, 'uploads/notices/') !== false || strpos($fileValue, 'uploads/') === 0) {
+                        $filePath = '../' . $fileValue;
+                    } 
+                    // If it contains 'notices/', prepend '../uploads/'
+                    elseif (strpos($fileValue, 'notices/') !== false) {
+                        $filePath = '../uploads/' . $fileValue;
+                    }
+                    // Otherwise, prepend '../uploads/notices/'
+                    else {
+                        $filePath = '../uploads/notices/' . $fileValue;
+                    }
+                }
+                if (!empty($filePath)): ?>
+                  <a href="<?= htmlspecialchars($filePath) ?>" target="_blank" class="btn btn-sm btn-outline-primary">View File</a>
                 <?php endif; ?>
                 <button 
                   class="btn btn-sm btn-warning"
