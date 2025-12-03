@@ -46,7 +46,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_faculty'])) {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['profile_photo']['name']);
+        // Delete old image if exists
+        if (!empty($photo) && $photo !== 'assets/faculty-default.png') {
+            $oldImageValue = trim($photo);
+            // Handle different path formats when deleting old image
+            if (strpos($oldImageValue, 'uploads/faculty/') !== false || strpos($oldImageValue, 'uploads/') === 0) {
+                $oldPath = '../' . $oldImageValue;
+            } elseif (strpos($oldImageValue, 'faculty/') !== false) {
+                $oldPath = '../uploads/' . $oldImageValue;
+            } else {
+                $oldPath = '../uploads/faculty/' . $oldImageValue;
+            }
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+        $ext = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $target = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $target)) {
             $photo = 'uploads/faculty/' . $imageName;
@@ -131,9 +147,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_faculty'])) {
               </div>
               <div class="col-md-6">
                 <label class="form-label">Current Photo</label>
-                <?php if (!empty($faculty['profile_photo'])): ?>
+                <?php 
+                // Handle image path for display
+                $currentPhoto = '';
+                if (!empty($faculty['profile_photo']) && $faculty['profile_photo'] !== 'assets/faculty-default.png') {
+                    $imageValue = trim($faculty['profile_photo']);
+                    // If it already contains 'uploads/faculty/', use it as is
+                    if (strpos($imageValue, 'uploads/faculty/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                        $currentPhoto = '../' . $imageValue;
+                    } 
+                    // If it contains 'faculty/', prepend '../uploads/'
+                    elseif (strpos($imageValue, 'faculty/') !== false) {
+                        $currentPhoto = '../uploads/' . $imageValue;
+                    }
+                    // Otherwise, prepend '../uploads/faculty/'
+                    else {
+                        $currentPhoto = '../uploads/faculty/' . $imageValue;
+                    }
+                    
+                    // Verify file exists
+                    if (!file_exists($currentPhoto)) {
+                        $currentPhoto = '';
+                    }
+                }
+                if (!empty($currentPhoto)): ?>
                   <div class="mb-2">
-                    <img src="../<?= htmlspecialchars($faculty['profile_photo']) ?>" alt="Current Photo" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+                    <img src="<?= htmlspecialchars($currentPhoto) ?>" alt="Current Photo" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
                   </div>
                 <?php endif; ?>
                 <label class="form-label">Update Photo</label>
