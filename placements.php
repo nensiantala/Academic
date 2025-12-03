@@ -129,7 +129,35 @@ $result = $conn->query("SELECT * FROM placements ORDER BY created_at DESC");
     <?php
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $photo = !empty($row['student_photo']) && file_exists('uploads/' . $row['student_photo']) ? 'uploads/' . $row['student_photo'] : 'assets/default-avatar.png';
+            // Handle image path - check if it's already a full path or just filename
+            $photo = 'assets/default-avatar.png';
+            if (!empty($row['student_photo'])) {
+                $imageValue = trim($row['student_photo']);
+                // Normalize backslashes to forward slashes for cross-platform compatibility
+                $imageValue = str_replace('\\', '/', $imageValue);
+                
+                // If it already contains 'uploads/placements/', use it as is
+                if (strpos($imageValue, 'uploads/placements/') !== false) {
+                    $photo = $imageValue;
+                } 
+                // If it starts with 'uploads/', use it as is
+                elseif (strpos($imageValue, 'uploads/') === 0) {
+                    $photo = $imageValue;
+                }
+                // If it contains 'placements/', prepend 'uploads/'
+                elseif (strpos($imageValue, 'placements/') !== false) {
+                    $photo = 'uploads/' . $imageValue;
+                }
+                // Otherwise, prepend 'uploads/placements/'
+                else {
+                    $photo = 'uploads/placements/' . $imageValue;
+                }
+                
+                // Verify file exists, otherwise use default
+                if (!file_exists($photo)) {
+                    $photo = 'assets/default-avatar.png';
+                }
+            }
 
             echo '
             <div class="placement-tag">
