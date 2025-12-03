@@ -91,9 +91,36 @@ $notices = $conn->query("SELECT * FROM notices ORDER BY date DESC");
                   </div>
                 <?php endif; ?>
 
-                <?php if (!empty($notice['file']) && file_exists('uploads/' . $notice['file'])): ?>
+                <?php 
+                // Handle file path - check if it's already a full path or just filename
+                $filePath = '';
+                if (!empty($notice['file'])) {
+                    $fileValue = trim($notice['file']);
+                    // If it already contains 'uploads/notices/', use it as is
+                    if (strpos($fileValue, 'uploads/notices/') !== false) {
+                        $filePath = $fileValue;
+                    } 
+                    // If it starts with 'uploads/', use it as is
+                    elseif (strpos($fileValue, 'uploads/') === 0) {
+                        $filePath = $fileValue;
+                    }
+                    // If it contains 'notices/', prepend 'uploads/'
+                    elseif (strpos($fileValue, 'notices/') !== false) {
+                        $filePath = 'uploads/' . $fileValue;
+                    }
+                    // Otherwise, prepend 'uploads/notices/'
+                    else {
+                        $filePath = 'uploads/notices/' . $fileValue;
+                    }
+                    
+                    // Verify file exists
+                    if (!file_exists($filePath)) {
+                        $filePath = ''; // Don't show link if file doesn't exist
+                    }
+                }
+                if (!empty($filePath)): ?>
                   <div class="mt-2">
-                    <a href="uploads/<?= htmlspecialchars($notice['file']) ?>" 
+                    <a href="<?= htmlspecialchars($filePath) ?>" 
                        target="_blank" 
                        class="file-download-btn">
                       <i class="fas fa-file-download"></i>
