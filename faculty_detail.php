@@ -302,7 +302,32 @@ if (!$faculty) {
       </div>
       
       <?php 
-      $photo = !empty($faculty['profile_photo']) ? $faculty['profile_photo'] : 'assets/default-avatar.png';
+      // Handle image path - check if it's already a full path or just filename
+      $photo = 'assets/default-avatar.png';
+      if (!empty($faculty['profile_photo']) && $faculty['profile_photo'] !== 'assets/faculty-default.png') {
+          $imageValue = trim($faculty['profile_photo']);
+          // If it already contains 'uploads/faculty/', use it as is
+          if (strpos($imageValue, 'uploads/faculty/') !== false) {
+              $photo = $imageValue;
+          } 
+          // If it starts with 'uploads/', use it as is
+          elseif (strpos($imageValue, 'uploads/') === 0) {
+              $photo = $imageValue;
+          }
+          // If it contains 'faculty/', prepend 'uploads/'
+          elseif (strpos($imageValue, 'faculty/') !== false) {
+              $photo = 'uploads/' . $imageValue;
+          }
+          // Otherwise, prepend 'uploads/faculty/'
+          else {
+              $photo = 'uploads/faculty/' . $imageValue;
+          }
+          
+          // Verify file exists, otherwise use default
+          if (!file_exists($photo)) {
+              $photo = 'assets/default-avatar.png';
+          }
+      }
       ?>
       <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($faculty['name']) ?>" class="faculty-photo">
       <h1 class="faculty-name"><?= htmlspecialchars($faculty['name']) ?></h1>
