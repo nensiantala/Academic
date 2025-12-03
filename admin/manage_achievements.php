@@ -23,10 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_achievement'])) {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['image']['name']);
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $imagePath = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['image']['tmp_name'], $imagePath)) {
-            $image = $imageName;
+            $image = 'uploads/achievements/' . $imageName;
         }
     }
     
@@ -55,10 +56,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_achievement'])) {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['image']['name']);
+        // Delete old image if exists
+        if (!empty($image) && $image !== 'assets/img/default-achievement.jpg') {
+            $oldImageValue = trim($image);
+            // Handle different path formats when deleting old image
+            if (strpos($oldImageValue, 'uploads/achievements/') !== false || strpos($oldImageValue, 'uploads/') === 0) {
+                $oldPath = '../' . $oldImageValue;
+            } elseif (strpos($oldImageValue, 'achievements/') !== false) {
+                $oldPath = '../uploads/' . $oldImageValue;
+            } else {
+                $oldPath = '../uploads/achievements/' . $oldImageValue;
+            }
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $imagePath = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['image']['tmp_name'], $imagePath)) {
-            $image = $imageName;
+            $image = 'uploads/achievements/' . $imageName;
         }
     }
     
@@ -157,8 +174,31 @@ $result = $conn->query("SELECT * FROM achievements ORDER BY date DESC, created_a
           </div>
           
           <div class="d-flex align-items-center mb-2">
-            <?php if (!empty($a['image'])): ?>
-              <img src="../uploads/achievements/<?= htmlspecialchars($a['image']) ?>" class="achievement-image me-3" alt="Achievement">
+            <?php 
+            // Handle image path - check if it's already a full path or just filename
+            $img = '';
+            if (!empty($a['image'])) {
+                $imageValue = trim($a['image']);
+                // If it already contains 'uploads/achievements/', use it as is
+                if (strpos($imageValue, 'uploads/achievements/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                    $img = '../' . $imageValue;
+                } 
+                // If it contains 'achievements/', prepend '../uploads/'
+                elseif (strpos($imageValue, 'achievements/') !== false) {
+                    $img = '../uploads/' . $imageValue;
+                }
+                // Otherwise, prepend '../uploads/achievements/'
+                else {
+                    $img = '../uploads/achievements/' . $imageValue;
+                }
+                
+                // Verify file exists
+                if (!file_exists($img)) {
+                    $img = ''; // Don't show image if file doesn't exist
+                }
+            }
+            if (!empty($img)): ?>
+              <img src="<?= htmlspecialchars($img) ?>" class="achievement-image me-3" alt="Achievement">
             <?php endif; ?>
             <div class="flex-grow-1">
               <p class="text-muted small mb-1"><?=date('d M Y', strtotime($a['date']))?></p>
