@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_placement'])) {
     }
 
     $stmt = $conn->prepare("INSERT INTO placements (student_photo, created_at) VALUES (?, ?)");
-    $relativePath = 'placements/' . $photo;
+    $relativePath = 'uploads/placements/' . $photo;
     $stmt->bind_param("ss", $relativePath, $created_at);
     if ($stmt->execute()) {
         echo "<script>alert('Placement added successfully!'); window.location.href='manage_placement.php';</script>";
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_placement'])) {
                     }
                     if (file_exists($oldPath)) @unlink($oldPath);
                 }
-                $newPhoto = 'placements/' . $filename;
+                $newPhoto = 'uploads/placements/' . $filename;
             }
         }
         $stmt = $conn->prepare("UPDATE placements SET student_photo = ? WHERE id = ?");
