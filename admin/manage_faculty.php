@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_faculty'])) {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['profile_photo']['name']);
+        $ext = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $target = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $target)) {
             $photo = 'uploads/faculty/' . $imageName;
@@ -67,7 +68,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_faculty'])) {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $imageName = time() . '_' . basename($_FILES['profile_photo']['name']);
+        // Delete old image if exists
+        if (!empty($photo) && $photo !== 'assets/faculty-default.png') {
+            $oldImageValue = trim($photo);
+            // Handle different path formats when deleting old image
+            if (strpos($oldImageValue, 'uploads/faculty/') !== false || strpos($oldImageValue, 'uploads/') === 0) {
+                $oldPath = '../' . $oldImageValue;
+            } elseif (strpos($oldImageValue, 'faculty/') !== false) {
+                $oldPath = '../uploads/' . $oldImageValue;
+            } else {
+                $oldPath = '../uploads/faculty/' . $oldImageValue;
+            }
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+        $ext = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+        $imageName = uniqid() . '_' . time() . '.' . $ext;
         $target = $uploadDir . $imageName;
         if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $target)) {
             $photo = 'uploads/faculty/' . $imageName;
@@ -84,6 +101,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_faculty'])) {
 // Handle delete faculty
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
+    // Delete associated image file
+    $stmt = $conn->prepare("SELECT profile_photo FROM faculty WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $photo = $row['profile_photo'] ?? '';
+        if (!empty($photo) && $photo !== 'assets/faculty-default.png') {
+            $imageValue = trim($photo);
+            // Handle different path formats
+            if (strpos($imageValue, 'uploads/faculty/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                $path = '../' . $imageValue;
+            } elseif (strpos($imageValue, 'faculty/') !== false) {
+                $path = '../uploads/' . $imageValue;
+            } else {
+                $path = '../uploads/faculty/' . $imageValue;
+            }
+            if (file_exists($path)) {
+                @unlink($path);
+            }
+        }
+    }
+    $stmt->close();
+    
+    // Delete faculty record
     $stmt = $conn->prepare("DELETE FROM faculty WHERE id=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -169,7 +211,28 @@ $result = $conn->query("SELECT * FROM faculty ORDER BY id DESC");
     <?php
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $photo = !empty($row['profile_photo']) ? '../' . $row['profile_photo'] : '../assets/default-avatar.png';
+            // Handle image path - check if it's already a full path or just filename
+            $photo = '../assets/default-avatar.png';
+            if (!empty($row['profile_photo']) && $row['profile_photo'] !== 'assets/faculty-default.png') {
+                $imageValue = trim($row['profile_photo']);
+                // If it already contains 'uploads/faculty/', use it as is
+                if (strpos($imageValue, 'uploads/faculty/') !== false || strpos($imageValue, 'uploads/') === 0) {
+                    $photo = '../' . $imageValue;
+                } 
+                // If it contains 'faculty/', prepend '../uploads/'
+                elseif (strpos($imageValue, 'faculty/') !== false) {
+                    $photo = '../uploads/' . $imageValue;
+                }
+                // Otherwise, prepend '../uploads/faculty/'
+                else {
+                    $photo = '../uploads/faculty/' . $imageValue;
+                }
+                
+                // Verify file exists, otherwise use default
+                if (!file_exists($photo)) {
+                    $photo = '../assets/default-avatar.png';
+                }
+            }
             $tags = !empty($row['tags']) ? explode(',', $row['tags']) : [];
             
             echo '
