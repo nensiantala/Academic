@@ -147,12 +147,31 @@ include 'db.php';
     $result = $conn->query("SELECT * FROM faculty ORDER BY id DESC");
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            // Check if profile_photo already contains the full path
-            if (!empty($row['profile_photo'])) {
-                // If it already starts with 'uploads/', use it as is, otherwise prepend 'uploads/'
-                $photo = (strpos($row['profile_photo'], 'uploads/') === 0) ? $row['profile_photo'] : 'uploads/' . $row['profile_photo'];
-            } else {
-                $photo = 'assets/default-avatar.png';
+            // Handle image path - check if it's already a full path or just filename
+            $photo = 'assets/default-avatar.png';
+            if (!empty($row['profile_photo']) && $row['profile_photo'] !== 'assets/faculty-default.png') {
+                $imageValue = trim($row['profile_photo']);
+                // If it already contains 'uploads/faculty/', use it as is
+                if (strpos($imageValue, 'uploads/faculty/') !== false) {
+                    $photo = $imageValue;
+                } 
+                // If it starts with 'uploads/', use it as is
+                elseif (strpos($imageValue, 'uploads/') === 0) {
+                    $photo = $imageValue;
+                }
+                // If it contains 'faculty/', prepend 'uploads/'
+                elseif (strpos($imageValue, 'faculty/') !== false) {
+                    $photo = 'uploads/' . $imageValue;
+                }
+                // Otherwise, prepend 'uploads/faculty/'
+                else {
+                    $photo = 'uploads/faculty/' . $imageValue;
+                }
+                
+                // Verify file exists, otherwise use default
+                if (!file_exists($photo)) {
+                    $photo = 'assets/default-avatar.png';
+                }
             }
             $tags = !empty($row['tags']) ? explode(',', $row['tags']) : [];
             $subjects = !empty($row['subjects_undertaken']) ? explode(',', $row['subjects_undertaken']) : [];
