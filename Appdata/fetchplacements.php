@@ -17,7 +17,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-$sql = "SELECT * FROM placements ORDER BY year DESC";
+$sql = "SELECT * FROM placements ORDER BY created_at DESC";
 $result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {
