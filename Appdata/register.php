@@ -16,7 +16,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-// Read input (allow GET fallback for easier testing)
+// Read input
 $name     = trim($_POST['name']     ?? $_GET['name']     ?? '');
 $email    = trim($_POST['email']    ?? $_GET['email']    ?? '');
 $phone    = trim($_POST['phone']    ?? $_GET['phone']    ?? '');
@@ -30,6 +30,22 @@ if ($name === '' || $email === '' || $password === '') {
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(["status" => false, "message" => "Invalid email format"]);
+    exit;
+}
+
+/* 🔒 DOMAIN RESTRICTION */
+$allowedDomains = [
+    'marwadiuniversity.ac.in',
+    'marwadieducation.edu.in'
+];
+
+$emailDomain = substr(strrchr($email, "@"), 1);
+
+if (!in_array($emailDomain, $allowedDomains)) {
+    echo json_encode([
+        "status" => false,
+        "message" => "Only Marwadi University or Marwadi Education email IDs are allowed"
+    ]);
     exit;
 }
 
@@ -47,9 +63,13 @@ if ($checkStmt->num_rows > 0) {
 }
 $checkStmt->close();
 
+// Hash password
 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-$stmt = $conn->prepare("INSERT INTO users (name, email, phone, password) VALUES (?, ?, ?, ?)");
+// Insert user
+$stmt = $conn->prepare(
+    "INSERT INTO users (name, email, phone, password) VALUES (?, ?, ?, ?)"
+);
 $stmt->bind_param("ssss", $name, $email, $phone, $hashedPassword);
 
 if ($stmt->execute()) {
@@ -70,4 +90,3 @@ if ($stmt->execute()) {
 $stmt->close();
 $conn->close();
 ?>
-
