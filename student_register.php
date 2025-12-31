@@ -1,19 +1,49 @@
 <?php
 include 'db.php';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-  $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $name, $email, $password);
-    if ($stmt->execute()) {
-        echo "<script>alert('Registration successful!'); window.location.href='student_login.php';</script>";
-    } else {
-        echo "Error: " . $stmt->error;
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $passwordRaw = $_POST['password'];
+
+    // Allowed domains
+    $allowedDomains = [
+        'marwadiuniversity.ac.in',
+        'marwadieducation.edu.in'
+    ];
+
+    // Extract domain from email
+    $emailDomain = substr(strrchr($email, "@"), 1);
+
+    // Validate domain
+    if (!in_array($emailDomain, $allowedDomains)) {
+        echo "<script>
+            alert('Only Marwadi University email IDs are allowed.');
+            window.history.back();
+        </script>";
+        exit;
     }
+
+    // Hash password
+    $password = password_hash($passwordRaw, PASSWORD_DEFAULT);
+
+    // Insert user
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $name, $email, $password);
+
+    if ($stmt->execute()) {
+        echo "<script>
+            alert('Registration successful!');
+            window.location.href='student_login.php';
+        </script>";
+    } else {
+        echo "<script>alert('Email already exists or error occurred');</script>";
+    }
+
     $stmt->close();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
