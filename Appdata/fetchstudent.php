@@ -15,7 +15,6 @@ if ($conn->connect_error) {
     exit;
 }
 
-// 🔴 IMPORTANT
 if (!isset($_GET['user_id'])) {
     echo json_encode(["status" => "error", "message" => "User ID missing"]);
     exit;
@@ -30,19 +29,15 @@ $sql = "SELECT id, name, email, phone, created_at
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-
 $result = $stmt->get_result();
 
-if ($result->num_rows === 1) {
+if ($result->num_rows == 1) {
     echo json_encode([
         "status" => "success",
         "data" => $result->fetch_assoc()
     ]);
 } else {
-    echo json_encode([
-        "status" => "error",
-        "message" => "User not found"
-    ]);
+    echo json_encode(["status" => "error", "message" => "User not found"]);
 }
 
 $conn->close();
