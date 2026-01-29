@@ -3,6 +3,7 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET");
 
+// Database connection
 $conn = new mysqli(
     "bsjvqufvzqkzs5kqijg1-mysql.services.clever-cloud.com",
     "u2dmuf8ob16mtxjc",
@@ -11,23 +12,30 @@ $conn = new mysqli(
 );
 
 if ($conn->connect_error) {
-    echo json_encode(["status" => "error", "message" => "DB connection failed"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database connection failed"
+    ]);
     exit;
 }
 
-if (!isset($_GET['user_id'])) {
-    echo json_encode(["status" => "error", "message" => "User ID missing"]);
+/* 🔴 IMPORTANT: get ID from URL */
+if (!isset($_GET['id'])) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "User ID missing"
+    ]);
     exit;
 }
 
-$user_id = intval($_GET['user_id']);
+$id = intval($_GET['id']); // sanitize
 
 $sql = "SELECT id, name, email, phone, created_at 
         FROM users 
         WHERE id = ?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -37,8 +45,12 @@ if ($result->num_rows == 1) {
         "data" => $result->fetch_assoc()
     ]);
 } else {
-    echo json_encode(["status" => "error", "message" => "User not found"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "User not found"
+    ]);
 }
 
+$stmt->close();
 $conn->close();
 ?>
